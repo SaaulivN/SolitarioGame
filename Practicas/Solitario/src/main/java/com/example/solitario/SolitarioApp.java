@@ -3,42 +3,60 @@ package com.example.solitario;
 import DeckOfCards.CartaInglesa;
 import DeckOfCards.Mazo;
 import com.example.solitario.GUI.CartaGrafica;
+import com.example.solitario.GUI.FoundationGrafico;
+import com.example.solitario.GUI.MazoGrafico;
+import com.example.solitario.GUI.TableauDeckGrafico;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
+import java.awt.*;
+
 public class SolitarioApp extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        // 1. Contenedor principal (Pane permite posicionamiento libre con coordenadas X, Y)
         Pane root = new Pane();
-
-        // 2. Lógica del juego: Crear un mazo y sacar una carta
         Mazo mazo = new Mazo();
-        CartaInglesa cartaLogica = mazo.obtenerUnaCarta();
 
-        // La ponemos boca arriba para que se vea el .png del valor y no el reverso
+        // Seccion del mazo
+        MazoGrafico mazoVisual = new MazoGrafico(mazo);
+        mazoVisual.setLayoutX(50);
+        mazoVisual.setLayoutY(50);
+        root.getChildren().add(mazoVisual);
+
+        // Seccion del drawPile
+        CartaInglesa cartaLogica = mazo.obtenerUnaCarta();
         if (cartaLogica != null) {
             cartaLogica.makeFaceUp();
-
-            // 3. Crear la representación gráfica de la carta
             CartaGrafica cartaVisual = new CartaGrafica(cartaLogica);
-
-            // Ubicarla en la ventana
-            cartaVisual.setLayoutX(100);
-            cartaVisual.setLayoutY(100);
-
-            // 4. Agregar la carta al panel
+            cartaVisual.setLayoutX(170);
+            cartaVisual.setLayoutY(50);
             root.getChildren().add(cartaVisual);
         }
 
-        // Configurar la escena (Fondo verde tipo mesa de casino)
-        Scene escena = new Scene(root, 800, 600, Color.DARKGREEN);
+        // Seccion del Foundation
+        for (int i = 0; i < 4; i++) {
+            FoundationGrafico foundation = new FoundationGrafico();
+            foundation.setLayoutX(400 + (i * 120));
+            foundation.setLayoutY(50);
+            root.getChildren().add(foundation);
+        }
 
-        primaryStage.setTitle("Solitario - Visualización de Cartas");
+        // Seccion del Tableau
+        for (int i = 0; i < 7; i++) {
+            TableauDeckGrafico tableauGrafico = new TableauDeckGrafico();
+            tableauGrafico.setLayoutX(50 + (i * 120));
+            tableauGrafico.setLayoutY(250);
+            root.getChildren().add(tableauGrafico);
+        }
+
+
+
+        Scene escena = new Scene(root, 1020, 800, Color.DARKRED);
+        primaryStage.setTitle("Solitario");
         primaryStage.setScene(escena);
         primaryStage.show();
     }
