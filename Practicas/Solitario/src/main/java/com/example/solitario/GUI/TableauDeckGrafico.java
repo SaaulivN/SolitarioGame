@@ -1,25 +1,46 @@
 package com.example.solitario.GUI;
 
+import solitaire.TableauDeck;
+import DeckOfCards.CartaInglesa;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import java.util.ArrayList;
 
 public class TableauDeckGrafico extends Pane {
-    public TableauDeckGrafico() {
-        Rectangle base = new Rectangle(100, 145);
-        base.setFill(Color.rgb(255, 255, 255, 0.1));
-        base.setArcWidth(10);
-        base.setArcHeight(10);
+    private TableauDeck deckLogico;
+    private boolean resaltarUltima = false;
 
-        this.getChildren().add(base);
+    public TableauDeckGrafico(TableauDeck deckLogico) {
+        this.deckLogico = deckLogico;
+        actualizar();
     }
 
-    /**
-     * Método para añadir una carta con el efecto de escalonado
-     */
-    public void agregarCarta(CartaGrafica cartaVisual) {
-        int indice = this.getChildren().size() - 1;
-        cartaVisual.setLayoutY(indice * 30);
-        this.getChildren().add(cartaVisual);
+    public void setResaltarUltima(boolean resaltar) {
+        this.resaltarUltima = resaltar;
+        actualizar();
+    }
+
+    public void actualizar() {
+        this.getChildren().clear();
+
+        // Rectángulo invisible para detectar clics en la columna completa
+        Rectangle detector = new Rectangle(100, 500);
+        detector.setFill(Color.TRANSPARENT);
+        this.getChildren().add(detector);
+
+        ArrayList<CartaInglesa> cartas = deckLogico.getCards();
+        for (int i = 0; i < cartas.size(); i++) {
+            CartaGrafica visual = new CartaGrafica(cartas.get(i));
+            visual.setLayoutY(i * 30);
+            visual.setMouseTransparent(true); // El clic lo captura el Pane
+
+            // Si la columna está seleccionada, resaltamos las cartas visibles
+            if (resaltarUltima && cartas.get(i).isFaceup()) {
+                visual.setResaltado(true);
+            }
+
+            this.getChildren().add(visual);
+        }
     }
 }

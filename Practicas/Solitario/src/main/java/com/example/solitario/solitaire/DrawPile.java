@@ -97,6 +97,10 @@ public class DrawPile {
         }
     }
 
+    public ArrayList<CartaInglesa> getCartas() {
+        return cartas;
+    }
+
     @Override
     public String toString() {
         if (cartas.isEmpty()) {

@@ -1,67 +1,122 @@
 package com.example.solitario;
 
-import DeckOfCards.CartaInglesa;
-import DeckOfCards.Mazo;
-import com.example.solitario.GUI.CartaGrafica;
-import com.example.solitario.GUI.FoundationGrafico;
-import com.example.solitario.GUI.MazoGrafico;
-import com.example.solitario.GUI.TableauDeckGrafico;
+import solitaire.*;
+import com.example.solitario.GUI.*;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
-import java.awt.*;
-
 public class SolitarioApp extends Application {
+    private SolitaireGame juego;
+    private Pane root;
+
+    // ESTADO DEL SISTEMA DE CLICS
+    private enum TipoSeleccion { NINGUNA, WASTE, TABLEAU }
+    private TipoSeleccion seleccionActual = TipoSeleccion.NINGUNA;
+    private int indiceSeleccionado = -1; // 1-7 para Tableaus
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
-        Pane root = new Pane();
-        Mazo mazo = new Mazo();
+    public void start(Stage primaryStage) {
+        root = new Pane();
+        juego = new SolitaireGame();
+        renderizarTablero();
 
-        // Seccion del mazo
-        MazoGrafico mazoVisual = new MazoGrafico(mazo);
-        mazoVisual.setLayoutX(50);
-        mazoVisual.setLayoutY(50);
-        root.getChildren().add(mazoVisual);
-
-        // Seccion del drawPile
-        CartaInglesa cartaLogica = mazo.obtenerUnaCarta();
-        if (cartaLogica != null) {
-            cartaLogica.makeFaceUp();
-            CartaGrafica cartaVisual = new CartaGrafica(cartaLogica);
-            cartaVisual.setLayoutX(170);
-            cartaVisual.setLayoutY(50);
-            root.getChildren().add(cartaVisual);
-        }
-
-        // Seccion del Foundation
-        for (int i = 0; i < 4; i++) {
-            FoundationGrafico foundation = new FoundationGrafico();
-            foundation.setLayoutX(400 + (i * 120));
-            foundation.setLayoutY(50);
-            root.getChildren().add(foundation);
-        }
-
-        // Seccion del Tableau
-        for (int i = 0; i < 7; i++) {
-            TableauDeckGrafico tableauGrafico = new TableauDeckGrafico();
-            tableauGrafico.setLayoutX(50 + (i * 120));
-            tableauGrafico.setLayoutY(250);
-            root.getChildren().add(tableauGrafico);
-        }
-
-
-
-        Scene escena = new Scene(root, 1020, 800, Color.DARKRED);
-        primaryStage.setTitle("Solitario");
+        Scene escena = new Scene(root, 1100, 850, Color.DARKRED);
+        primaryStage.setTitle("Solitario Grafico");
         primaryStage.setScene(escena);
         primaryStage.show();
     }
 
-    public static void main(String[] args) {
-        launch(args);
+    public void renderizarTablero() {
+        root.getChildren().clear();
+
+        // 1. DRAW PILE (Mazo) - Siempre independiente del estado de selección
+        MazoGrafico drawVisual = new MazoGrafico(juego.getDrawPile().getCartas());
+        drawVisual.setLayoutX(50); drawVisual.setLayoutY(50);
+        drawVisual.setOnMouseClicked(e -> {
+            cancelarSeleccion();
+            if (juego.getDrawPile().hayCartas()) juego.drawCards();
+            else juego.reloadDrawPile();
+            renderizarTablero();
+        });
+        root.getChildren().add(drawVisual);
+
+        // 2. WASTE PILE
+        if (!juego.getWastePile().getCartas().isEmpty()) {
+            CartaGrafica wasteVisual = new CartaGrafica(juego.getWastePile().verCarta());
+            wasteVisual.setLayoutX(175); wasteVisual.setLayoutY(50);
+            wasteVisual.setResaltado(seleccionActual == TipoSeleccion.WASTE);
+            wasteVisual.setOnMouseClicked(e -> manejarClicWaste());
+            root.getChildren().add(wasteVisual);
+        }
+
+        // 3. FOUNDATIONS (4 Pilas)
+        for (int i = 0; i < 4; i++) {
+            FoundationGrafico f = new FoundationGrafico(juego.getFoundations().get(i));
+            f.setLayoutX(450 + (i * 130)); f.setLayoutY(50);
+            f.setOnMouseClicked(e -> manejarClicFoundation());
+            root.getChildren().add(f);
+        }
+
+        // 4. TABLEAUS (7 Columnas)
+        for (int i = 0; i < 7; i++) {
+            int numTableau = i + 1;
+            TableauDeckGrafico t = new TableauDeckGrafico(juego.getTableau().get(i));
+            t.setLayoutX(50 + (i * 140)); t.setLayoutY(250);
+
+            // Resaltar si esta columna está seleccionada
+            if (seleccionActual == TipoSeleccion.TABLEAU && indiceSeleccionado == numTableau) {
+                t.setResaltarUltima(true);
+            }
+
+            t.setOnMouseClicked(e -> manejarClicTableau(numTableau));
+            root.getChildren().add(t);
+        }
+    }
+
+    // --- MANEJADORES DE LÓGICA DE CLIC ---
+
+    private void manejarClicWaste() {
+        if (seleccionActual == TipoSeleccion.NINGUNA) {
+            seleccionActual = TipoSeleccion.WASTE;
+        } else {
+            cancelarSeleccion();
+        }
+        renderizarTablero();
+    }
+
+    private void manejarClicTableau(int numero) {
+        if (seleccionActual == TipoSeleccion.NINGUNA) {
+            if (!juego.getTableau().get(numero - 1).isEmpty()) {
+                seleccionActual = TipoSeleccion.TABLEAU;
+                indiceSeleccionado = numero;
+            }
+        } else {
+            // Intentar Movimiento a Tableau
+            boolean exito = false;
+            if (seleccionActual == TipoSeleccion.WASTE) {
+                exito = juego.moveWasteToTableau(numero);
+            } else if (seleccionActual == TipoSeleccion.TABLEAU) {
+                exito = juego.moveTableauToTableau(indiceSeleccionado, numero);
+            }
+            cancelarSeleccion();
+        }
+        renderizarTablero();
+    }
+
+    private void manejarClicFoundation() {
+        if (seleccionActual != TipoSeleccion.NINGUNA) {
+            if (seleccionActual == TipoSeleccion.WASTE) juego.moveWasteToFoundation();
+            else juego.moveTableauToFoundation(indiceSeleccionado);
+            cancelarSeleccion();
+        }
+        renderizarTablero();
+    }
+
+    private void cancelarSeleccion() {
+        seleccionActual = TipoSeleccion.NINGUNA;
+        indiceSeleccionado = -1;
     }
 }

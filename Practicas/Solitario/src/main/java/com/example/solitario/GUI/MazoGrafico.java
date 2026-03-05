@@ -1,19 +1,21 @@
 package com.example.solitario.GUI;
 
-import DeckOfCards.Mazo;
+import DeckOfCards.CartaInglesa;
 import javafx.scene.layout.StackPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import java.util.ArrayList;
 
 public class MazoGrafico extends StackPane {
-    private Mazo mazoLogico;
+    private ArrayList<CartaInglesa> cartasLogicas;
     private ImageView vistaReverso;
 
-    public MazoGrafico(Mazo mazo) {
-        this.mazoLogico = mazo;
+    public MazoGrafico(ArrayList<CartaInglesa> cartas) {
+        this.cartasLogicas = cartas;
         this.vistaReverso = new ImageView();
 
         try {
+            // Ruta corregida a tu carpeta de Recursos
             Image imgReverso = new Image(getClass().getResourceAsStream("/com/example/solitario/Recursos/BackgroundCard.png"));
             vistaReverso.setImage(imgReverso);
         } catch (Exception e) {
@@ -28,8 +30,8 @@ public class MazoGrafico extends StackPane {
     }
 
     public void actualizarMazo() {
-        if (mazoLogico.getCartas().isEmpty()) {
-            this.setOpacity(0.5);
+        if (cartasLogicas == null || cartasLogicas.isEmpty()) {
+            this.setOpacity(0.3); // Se ve tenue si no hay cartas
         } else {
             this.setOpacity(1.0);
         }

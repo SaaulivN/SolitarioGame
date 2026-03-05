@@ -49,6 +49,10 @@ public class WastePile {
         return regresar;
     }
 
+    public ArrayList<CartaInglesa> getCartas() {
+        return cartas; // O el nombre que tenga tu ArrayList interno
+    }
+
     @Override
     public String toString() {
         StringBuilder stb = new StringBuilder();
