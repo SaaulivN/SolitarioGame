@@ -8,11 +8,11 @@ import javafx.scene.shape.Rectangle;
 import java.util.ArrayList;
 
 public class TableauDeckGrafico extends Pane {
-    private TableauDeck deckLogico;
+    private ArrayList<CartaInglesa> cartasParaDibujar;
     private boolean resaltarUltima = false;
 
-    public TableauDeckGrafico(TableauDeck deckLogico) {
-        this.deckLogico = deckLogico;
+    public TableauDeckGrafico(ArrayList<CartaInglesa> cartas) {
+        this.cartasParaDibujar = cartas;
         actualizar();
     }
 
@@ -23,23 +23,16 @@ public class TableauDeckGrafico extends Pane {
 
     public void actualizar() {
         this.getChildren().clear();
+        if (cartasParaDibujar == null) return;
 
-        // Rectángulo invisible para detectar clics en la columna completa
-        Rectangle detector = new Rectangle(100, 500);
-        detector.setFill(Color.TRANSPARENT);
-        this.getChildren().add(detector);
-
-        ArrayList<CartaInglesa> cartas = deckLogico.getCards();
-        for (int i = 0; i < cartas.size(); i++) {
-            CartaGrafica visual = new CartaGrafica(cartas.get(i));
+        for (int i = 0; i < cartasParaDibujar.size(); i++) {
+            CartaGrafica visual = new CartaGrafica(cartasParaDibujar.get(i));
             visual.setLayoutY(i * 30);
-            visual.setMouseTransparent(true); // El clic lo captura el Pane
+            visual.setMouseTransparent(true);
 
-            // Si la columna está seleccionada, resaltamos las cartas visibles
-            if (resaltarUltima && cartas.get(i).isFaceup()) {
+            if (resaltarUltima && cartasParaDibujar.get(i).isFaceup()) {
                 visual.setResaltado(true);
             }
-
             this.getChildren().add(visual);
         }
     }

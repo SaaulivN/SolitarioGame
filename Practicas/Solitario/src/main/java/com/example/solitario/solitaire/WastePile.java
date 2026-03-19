@@ -1,72 +1,38 @@
 package solitaire;
 
 import DeckOfCards.CartaInglesa;
-
 import java.util.ArrayList;
-/**
- * Modela el montículo donde se colocan las cartas
- * que se extraen de Draw pile.
- *
- * @author (Cecilia Curlango Rosas)
- * @version (2025-2)
- */
-public class WastePile {
-    private ArrayList<CartaInglesa> cartas;
 
-    public WastePile() {
-        cartas = new ArrayList<>();
-    }
+public class WastePile {
+    private Pila<CartaInglesa> cartas = new Pila<>(52);
 
     public void addCartas(ArrayList<CartaInglesa> nuevas) {
-        cartas.addAll(nuevas);
+        for (CartaInglesa c : nuevas) {
+            cartas.push(c);
+        }
     }
 
     public ArrayList<CartaInglesa> emptyPile() {
-        ArrayList<CartaInglesa> pile = new ArrayList<>();
-        if (!cartas.isEmpty()) {
-            pile.addAll(cartas);
-            cartas = new ArrayList<>();
+        ArrayList<CartaInglesa> lista = new ArrayList<>();
+        while (!cartas.pilaVacia()) {
+            lista.add(cartas.pop());
         }
-        return pile;
+        return lista;
     }
 
-    /**
-     * Obtener la última carta sin removerla.
-     * @return Carta que está encima. Si está vacía, es null.
-     */
-    public CartaInglesa verCarta() {
-        CartaInglesa regresar = null;
-        if (!cartas.isEmpty()) {
-            regresar = cartas.getLast();
-        }
-        return regresar;
-    }
-    public CartaInglesa getCarta() {
-        CartaInglesa regresar = null;
-        if (!cartas.isEmpty()) {
-            regresar = cartas.removeLast();
-        }
-        return regresar;
-    }
+    public CartaInglesa getCarta() { return cartas.pop(); }
+    public CartaInglesa verCarta() { return cartas.verTope(); }
+    public boolean hayCartas() { return !cartas.pilaVacia(); }
 
     public ArrayList<CartaInglesa> getCartas() {
-        return cartas; // O el nombre que tenga tu ArrayList interno
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder stb = new StringBuilder();
-        if (cartas.isEmpty()) {
-            stb.append("---");
-        } else {
-            CartaInglesa regresar = cartas.getLast();
-            regresar.makeFaceUp();
-            stb.append(regresar.toString());
+        ArrayList<CartaInglesa> lista = new ArrayList<>();
+        Pila<CartaInglesa> aux = new Pila<>(52);
+        while (!cartas.pilaVacia()) aux.push(cartas.pop());
+        while (!aux.pilaVacia()) {
+            CartaInglesa c = aux.pop();
+            lista.add(c);
+            cartas.push(c);
         }
-        return stb.toString();
-    }
-
-    public boolean hayCartas() {
-        return !cartas.isEmpty();
+        return lista;
     }
 }

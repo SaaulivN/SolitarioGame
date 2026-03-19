@@ -11,26 +11,28 @@ public class FoundationGrafico extends StackPane {
 
     public FoundationGrafico(FoundationDeck deckLogico) {
         this.deckLogico = deckLogico;
-        actualizar();
+        actualizar(); // Llamada inicial
     }
 
     public void actualizar() {
         this.getChildren().clear();
 
-        // Dibujar el marco base
+        // 1. Crear el Marco (Esto corrige que se vea el lugar de los Ases)
         Rectangle marco = new Rectangle(100, 145);
-        marco.setFill(Color.TRANSPARENT);
+        marco.setFill(Color.web("#8B0000").deriveColor(0, 1, 0.8, 1)); // Rojo un poco más claro que el fondo
         marco.setStroke(Color.WHITE);
         marco.setStrokeWidth(2);
-        marco.setArcWidth(10);
-        marco.setArcHeight(10);
+        marco.setArcWidth(15);
+        marco.setArcHeight(15);
         this.getChildren().add(marco);
 
-        // Si hay cartas en la lógica, mostrar la última (la de arriba)
+        // 2. Obtener la carta de la Pila lógica
         CartaInglesa ultima = deckLogico.getUltimaCarta();
+
         if (ultima != null) {
-            ultima.makeFaceUp(); // Asegurar que sea visible
-            this.getChildren().add(new CartaGrafica(ultima));
+            ultima.makeFaceUp(); // Forzar que sea visible
+            CartaGrafica visual = new CartaGrafica(ultima);
+            this.getChildren().add(visual);
         }
     }
 }
